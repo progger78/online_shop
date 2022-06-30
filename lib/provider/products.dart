@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:online_shop/models/http_exception.dart';
-import 'package:online_shop/utils/app_constants.dart';
 
 import '../utils/utils.dart';
 
@@ -28,16 +27,15 @@ class Product with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleFavorite() async {
+  Future<void> toggleFavorite(String? authToken, String userId) async {
     final oldStatus = isFavorite;
     isFavorite = !isFavorite;
 
     notifyListeners();
     final url = Uri.parse(
-        'https://onlineshop-df883-default-rtdb.firebaseio.com/products/$id.json');
+        'https://onlineshop-df883-default-rtdb.firebaseio.com/userFavorits/$userId/$id.json?auth=$authToken');
     try {
-      final response =
-          await http.patch(url, body: jsonEncode({'isFavorite': isFavorite}));
+      final response = await http.put(url, body: jsonEncode(isFavorite));
       if (response.statusCode >= 400) {
         _setFavValue(oldStatus);
       }
@@ -81,6 +79,10 @@ class Products with ChangeNotifier {
     // ),
   ];
 
+  final String authToken;
+  final String userId;
+  Products(this.authToken, this.userId, this._items);
+
   List<Product> get items => _items;
 
   List<Product> get favItems {
@@ -89,7 +91,7 @@ class Products with ChangeNotifier {
 
   Future<void> removeProduct(String productId) async {
     final url = Uri.parse(
-        'https://onlineshop-df883-default-rtdb.firebaseio.com/products/$productId.json');
+        'https://onlineshop-df883-default-rtdb.firebaseio.com/products/$productId.json?auth=$authToken');
 
     final existingProductIndex =
         _items.indexWhere((element) => element.id == productId);
@@ -119,8 +121,11 @@ class Products with ChangeNotifier {
     });
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url = Uri.parse(AppConstants.productsUrl);
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+    var url = Uri.parse(
+        'https://onlineshop-df883-default-rtdb.firebaseio.com/products.json?auth=$authToken&$filterString');
     try {
       final response = await http.get(url);
 
@@ -129,6 +134,10 @@ class Products with ChangeNotifier {
       if (extractedData.isEmpty) {
         return;
       }
+      url = Uri.parse(
+          'https://onlineshop-df883-default-rtdb.firebaseio.com/userFavorits/$userId.json?auth=$authToken');
+      final favoriteResponse = await http.get(url);
+      final favoriteData = jsonDecode(favoriteResponse.body);
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
             id: prodId,
@@ -136,7 +145,8 @@ class Products with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite']));
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false));
         _items = loadedProducts;
         notifyListeners();
       });
@@ -147,17 +157,17 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    final url = Uri.parse(AppConstants.productsUrl);
+    final url = Uri.parse('https://onlineshop-df883-default-rtdb.firebaseio.com/products.json?auth=$authToken');
     try {
       final response = await http.post(
         url,
         body: jsonEncode(
           {
+            'creatorId': userId,
             'title': product.title,
             'price': product.price,
             'description': product.description,
             'imageUrl': product.imageUrl,
-            'isFavorite': product.isFavorite
           },
         ),
       );
@@ -180,7 +190,7 @@ class Products with ChangeNotifier {
     var prodIndx = _items.indexWhere((element) => element.id == productId);
     if (prodIndx >= 0) {
       final url = Uri.parse(
-          'https://onlineshop-df883-default-rtdb.firebaseio.com/products/$productId.json');
+          'https://onlineshop-df883-default-rtdb.firebaseio.com/products/$productId.json?auth=$authToken');
       try {
         final response = await http.patch(url,
             body: jsonEncode({

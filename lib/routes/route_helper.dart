@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:online_shop/screens/auth_screen/auth-screen.dart';
 import '/screens/cart_screen.dart/cart_screen.dart';
 import '/screens/detail_product_screen/detail_product_screen.dart';
 import '/screens/edit_product_screen/edit_product_screen.dart';
@@ -13,6 +14,8 @@ class RouteHelper {
   static const String ordersScreen = '/order-screen';
   static const String userProductScreen = '/user-product-screen';
   static const String editProductScreen = '/edit-product-screen';
+  static const String authScreen = '/auth-screen';
+  static const String mainFoodScreen = '/main-food-screen';
 
   static getInitial() => initialScreen;
   static getDetailProductScreen(int pageId) =>
@@ -20,11 +23,18 @@ class RouteHelper {
   static getCartScreen() => cartScreen;
   static getOrdersScreen() => ordersScreen;
   static getUserProductScreen() => userProductScreen;
+  static getAuthScreen() => authScreen;
   static getEditProductScreen(int? pageId) =>
       '$editProductScreen?pageId=$pageId';
   static List<GetPage> pages = [
     GetPage(
         name: initialScreen,
+        transition: Transition.fadeIn,
+        page: () {
+          return AuthScreen();
+        }),
+    GetPage(
+        name: mainFoodScreen ,
         transition: Transition.fadeIn,
         page: () {
           return const MainProductScreen();
@@ -59,7 +69,7 @@ class RouteHelper {
         name: editProductScreen,
         transition: Transition.fadeIn,
         page: () {
-          var  pageId = Get.parameters['pageId'];
+          var pageId = Get.parameters['pageId'];
           return EditProductScreen(pageId: int.parse(pageId!));
         })
   ];

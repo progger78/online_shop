@@ -9,7 +9,6 @@ import '/widgets/app_icon.dart';
 import '/widgets/main_drawer.dart';
 import 'package:provider/provider.dart';
 
-
 class UserProductScreen extends StatelessWidget {
   UserProductScreen({Key? key}) : super(key: key);
   final GlobalKey<ScaffoldState> _scaffoldState = GlobalKey<ScaffoldState>();
@@ -17,12 +16,13 @@ class UserProductScreen extends StatelessWidget {
   Future<void> refreshData(
     BuildContext context,
   ) async {
-    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+    await Provider.of<Products>(context, listen: false)
+        .fetchAndSetProducts(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    var productData = Provider.of<Products>(context);
+    // var productData = Provider.of<Products>(context);
     return Scaffold(
       key: _scaffoldState,
       appBar: AppBar(
@@ -61,60 +61,76 @@ class UserProductScreen extends StatelessWidget {
         ],
       ),
       drawer: const AppDrawer(),
-      body: RefreshIndicator(
-        color: AppColors.yelowColor,
-        backgroundColor: AppColors.mainColor,
-        onRefresh: () => refreshData(context),
-        child: Padding(
-          padding: EdgeInsets.only(top: Dimensions.height10),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              // childAspectRatio: 1,
+      body: FutureBuilder(
+        future: refreshData(context),
+        builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.mainColor,
+              backgroundColor: AppColors.yelowColor,
             ),
-            itemCount: productData.items.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Padding(
-                padding: EdgeInsets.all(Dimensions.height5),
-                child: Container(
-                  padding: EdgeInsets.only(bottom: Dimensions.height15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Dimensions.radius15),
-                    color: Colors.red,
-                    image: DecorationImage(
-                        image: NetworkImage(
-                          productData.items[index].imageUrl,
+          );
+        } else {
+          return RefreshIndicator(
+            color: AppColors.yelowColor,
+            backgroundColor: AppColors.mainColor,
+            onRefresh: () => refreshData(context),
+            child: Padding(
+              padding: EdgeInsets.only(top: Dimensions.height10),
+              child: Consumer<Products>(
+                builder: (context, value, _) => GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    // childAspectRatio: 1,
+                  ),
+                  itemCount: value.items.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: EdgeInsets.all(Dimensions.height5),
+                      child: Container(
+                        padding: EdgeInsets.only(bottom: Dimensions.height15),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(Dimensions.radius15),
+                          color: Colors.red,
+                          image: DecorationImage(
+                              image: NetworkImage(
+                                value.items[index].imageUrl,
+                              ),
+                              fit: BoxFit.cover),
                         ),
-                        fit: BoxFit.cover),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      AppIcon(
-                          onPressed: () {
-                            Get.toNamed(
-                                RouteHelper.getEditProductScreen(index));
-                          },
-                          icon: Icons.edit,
-                          iconColor: Colors.white,
-                          backgorundColor: AppColors.mainColor),
-                      AppIcon(
-                          onPressed: () {
-                            Provider.of<Products>(context, listen: false)
-                                .removeProduct(productData.items[index].id!);
-                          },
-                          icon: Icons.delete,
-                          iconColor: Colors.white,
-                          backgorundColor: AppColors.yelowColor)
-                    ],
-                  ),
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            AppIcon(
+                                onPressed: () {
+                                  Get.toNamed(
+                                      RouteHelper.getEditProductScreen(index));
+                                },
+                                icon: Icons.edit,
+                                iconColor: Colors.white,
+                                backgorundColor: AppColors.mainColor),
+                            AppIcon(
+                                onPressed: () {
+                                  Provider.of<Products>(context, listen: false)
+                                      .removeProduct(value.items[index].id!);
+                                },
+                                icon: Icons.delete,
+                                iconColor: Colors.white,
+                                backgorundColor: AppColors.yelowColor)
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+            ),
+          );
+        }
+      }),
     );
   }
 }

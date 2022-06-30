@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:online_shop/routes/route_helper.dart';
-import 'package:online_shop/utils/utils.dart';
-import 'package:online_shop/widgets/app_big_text.dart';
+import '/provider/auth.dart';
+import '/routes/route_helper.dart';
+import '/utils/utils.dart';
+import '/widgets/app_big_text.dart';
+import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -53,7 +55,15 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.list,
             text: 'Your Products',
             onPressed: () =>
-                Get.offAndToNamed(RouteHelper.getUserProductScreen()))
+                Get.offAndToNamed(RouteHelper.getUserProductScreen())),
+        MyListTile(
+            icon: Icons.exit_to_app_outlined,
+            text: 'Log Out',
+            onPressed: () {
+              Navigator.of(context).pop();
+              Get.offAndToNamed(RouteHelper.getInitial());
+              Provider.of<Auth>(context, listen: false).logOut();
+            })
       ]),
     );
   }
@@ -74,8 +84,13 @@ class MyListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon,),
-      title: AppBigText(text: text, color: AppColors.mainColor,),
+      leading: Icon(
+        icon,
+      ),
+      title: AppBigText(
+        text: text,
+        color: AppColors.mainColor,
+      ),
       onTap: onPressed,
     );
   }

@@ -25,14 +25,23 @@ class OrderItem {
 
 class Order with ChangeNotifier {
   List<OrderItem> _orders = [];
-  List<OrderItem> get orders => _orders;
 
+  Order(
+    this.authToken,
+    this.userId,
+    this._orders,
+  );
+  List<OrderItem> get orders => _orders;
+  final String? authToken;
+
+  final String? userId;
   Future<void> fetchAndSetOrder() async {
-    final url = Uri.parse(AppConstants.ordersUrl);
+    final url = Uri.parse(
+        'https://onlineshop-df883-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken');
     final response = await http.get(url);
     final List<OrderItem> loadedOrders = [];
     final extractedData = jsonDecode(response.body) as Map<String, dynamic>;
-    if (extractedData.isEmpty) {
+    if (extractedData.isEmpty || extractedData == null) {
       return;
     }
     extractedData.forEach((orderId, orderData) {
@@ -56,7 +65,8 @@ class Order with ChangeNotifier {
   Future<void> addOrder(
       List<CartItem> products, double totalAmount, int itemsAmount) async {
     if (products.isNotEmpty) {
-      final url = Uri.parse(AppConstants.ordersUrl);
+      final url = Uri.parse(
+          'https://onlineshop-df883-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken');
       final timestamp = DateTime.now();
       final response = await http.post(url,
           body: jsonEncode({
@@ -100,7 +110,7 @@ class Order with ChangeNotifier {
 
   Future<void> deleteOrder(String orderId) async {
     final url = Uri.parse(
-        'https://onlineshop-df883-default-rtdb.firebaseio.com/orders/$orderId.json');
+        'https://onlineshop-df883-default-rtdb.firebaseio.com/orders/$orderId.json?auth=$authToken');
     final existingProductIndex =
         _orders.indexWhere((element) => element.id == orderId);
     final existingProduct = _orders[existingProductIndex];

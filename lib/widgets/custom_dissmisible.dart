@@ -9,13 +9,13 @@ import 'app_small_text.dart';
 class CustomDismissible extends StatelessWidget {
   const CustomDismissible({
     Key? key,
-    required this.isExpanded,
+  
     required this.index,
     required this.orderInfo,
     required this.child,
   }) : super(key: key);
 
-  final bool isExpanded;
+
   final int index;
   final Order orderInfo;
   final Widget child;

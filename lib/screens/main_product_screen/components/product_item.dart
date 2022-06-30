@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:online_shop/provider/auth.dart';
 import 'package:online_shop/provider/cart.dart';
 
 import 'package:online_shop/routes/route_helper.dart';
@@ -21,6 +22,8 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     var product = Provider.of<Product>(context, listen: false);
     var cart = Provider.of<Cart>(context);
+    var auth = Provider.of<Auth>(context);
+
     return GridTile(
       footer: Container(
         height: Dimensions.height55,
@@ -36,7 +39,8 @@ class ProductItem extends StatelessWidget {
           children: [
             Consumer<Product>(
               builder: (context, product, _) => IconButton(
-                  onPressed: () => product.toggleFavorite(),
+                  onPressed: () =>
+                      product.toggleFavorite(auth.token, auth.userId!),
                   icon: Icon(product.isFavorite
                       ? Icons.favorite
                       : Icons.favorite_outline),

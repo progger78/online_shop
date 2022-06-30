@@ -6,19 +6,20 @@ import 'app_small_text.dart';
 
 class CustomAlertDialog extends StatelessWidget {
   const CustomAlertDialog({
-    Key? key, required this.context, required this.content,
+    Key? key, required this.context, required this.content, this.title,
   }) : super(key: key);
 
   final BuildContext context;
   
   final String content;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Dimensions.radius25)),
-      title: const Text('Something happened :('),
+      title:  Text(title ?? 'Something went wrong'),
       content: AppBigText(
         text: content,
         color: Colors.black,

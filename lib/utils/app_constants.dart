@@ -7,6 +7,10 @@ class AppConstants {
       'https://onlineshop-df883-default-rtdb.firebaseio.com/products.json';
   static const String ordersUrl =
       'https://onlineshop-df883-default-rtdb.firebaseio.com/orders.json';
+  static const String sighUpUrl =
+      'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyB-o02dwnztrbAj586UFi2f-xwgjA-WDyM';
+        static const String signInUrl =
+      'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyB-o02dwnztrbAj586UFi2f-xwgjA-WDyM';
   static const String recommendedProductUrl = '/api/v1/products/recommended';
 
   static const String token = 'MyToken';
